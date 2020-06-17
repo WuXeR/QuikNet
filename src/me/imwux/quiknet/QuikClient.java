@@ -32,9 +32,7 @@ public class QuikClient {
                     byte[] data = Arrays.copyOfRange(packet.getData(), 4, 4+dataLength);
                 
                     for(QuikListener listener : listeners) {
-                        new Thread(() -> {
-                            listener.received(connection, new QuikBuffer(data));
-                        }).start();
+                        new Thread(() -> listener.received(connection, new QuikBuffer(data))).start();
                     }
                 } catch (SocketException e) {
                     close();
@@ -56,9 +54,7 @@ public class QuikClient {
                             if (stream.available() >= dataLength) {
                                 byte[] data = stream.readNBytes(dataLength);
                                 for (QuikListener listener : listeners) {
-                                    new Thread(() -> {
-                                        listener.received(connection, new QuikBuffer(data));
-                                    }).start();
+                                    new Thread(() -> listener.received(connection, new QuikBuffer(data))).start();
                                 }
                                 break;
                             }
@@ -102,8 +98,7 @@ public class QuikClient {
         // Ensures The Client Is Ready
         try {
             Thread.sleep(100);
-        } catch (InterruptedException ignored) {
-        }
+        } catch (InterruptedException ignored) {}
     
         tcpThread.start();
         udpThread.start();
