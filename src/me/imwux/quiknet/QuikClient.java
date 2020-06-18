@@ -94,6 +94,9 @@ public class QuikClient {
         }
         
         connection = new QuikConnection(tcpSocket, udpSocket, address.getPort(), maxUdpPacketSize);
+        for (QuikListener listener : listeners) {
+            new Thread(() -> listener.connected(connection)).start();
+        }
     
         // Ensures The Client Is Ready
         try {
@@ -109,6 +112,9 @@ public class QuikClient {
         tcpThread.interrupt();
         udpThread.interrupt();
         connection.close();
+        for (QuikListener listener : listeners) {
+            new Thread(() -> listener.disconnected(connection)).start();
+        }
     }
     
     public void sendTCP(QuikBuffer data) {

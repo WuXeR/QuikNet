@@ -30,9 +30,7 @@ public class QuikPeer {
                             if (stream.available() >= dataLength) {
                                 byte[] data = stream.readNBytes(dataLength);
                                 for (QuikListener listener : server.getListeners()) {
-                                    new Thread(() -> {
-                                        listener.received(connection, new QuikBuffer(data));
-                                    }).start();
+                                    new Thread(() -> listener.received(connection, new QuikBuffer(data))).start();
                                 }
                                 break;
                             }
@@ -63,6 +61,9 @@ public class QuikPeer {
                     if(stream.available() >= 4) {
                         ByteBuffer buffer = ByteBuffer.wrap(stream.readNBytes(4));
                         connection = new QuikConnection(tcpSocket, server.getUdpSocket(), buffer.getInt(), server.getMaxUdpPacketSize());
+                        for (QuikListener listener : server.getListeners()) {
+                            new Thread(() -> listener.connected(connection)).start();
+                        }
                         break;
                     }
                 } catch (IOException e) {
@@ -78,6 +79,9 @@ public class QuikPeer {
         connection.close();
         tcpThread.interrupt();
         server.removePeer(this);
+        for (QuikListener listener : server.getListeners()) {
+            new Thread(() -> listener.disconnected(connection)).start();
+        }
     }
     
     public QuikConnection getConnection() {

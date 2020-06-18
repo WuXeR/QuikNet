@@ -8,9 +8,14 @@ is then sent and received.
 ```java
 public static void ExampleServerSetup() throws IOException {
     QuikServer server = new QuikServer();
-    server.registerListener((connection, buffer) -> {
-        System.out.println(buffer.readString());
-    });
+    server.registerListener(new QuikListener() {
+        ...
+
+        @Override
+        public void received(QuikConnection connection, QuikBuffer buffer) {
+            System.out.println(buffer.readString());
+        }
+    }
     server.bind(new InetSocketAddress(17005));
 }
 
