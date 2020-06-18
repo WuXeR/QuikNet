@@ -53,6 +53,9 @@ public class QuikClient {
                         while (!tcpThread.isInterrupted()) {
                             if (stream.available() >= dataLength) {
                                 byte[] data = stream.readNBytes(dataLength);
+                                if(dataLength == 1)
+                                    if(data[0] == 0)
+                                        return; // This Is A Ping Packet
                                 for (QuikListener listener : listeners) {
                                     new Thread(() -> listener.received(connection, new QuikBuffer(data))).start();
                                 }

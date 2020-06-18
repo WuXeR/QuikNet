@@ -25,8 +25,11 @@ public class QuikPeer {
                     if (stream.available() >= 4) {
                         ByteBuffer buffer = ByteBuffer.wrap(stream.readNBytes(4));
                         int dataLength = buffer.getInt();
-                    
+                        
                         while (!tcpThread.isInterrupted()) {
+                            if(connection.isClosed())
+                                close(); // Fixes Getting Stuck Waiting For Data
+                            
                             if (stream.available() >= dataLength) {
                                 byte[] data = stream.readNBytes(dataLength);
                                 for (QuikListener listener : server.getListeners()) {

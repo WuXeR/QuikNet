@@ -8,7 +8,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class QuikServer {
     
-    private Thread tcpThread, udpThread;
+    private Thread tcpThread, udpThread, keepAliveThread;
     
     private ServerSocket tcpSocket;
     private DatagramSocket udpSocket;
@@ -55,9 +55,7 @@ public class QuikServer {
                     for (QuikPeer peer : peers) {
                         if (peer.getConnection().getUdpAddress().getPort() == packet.getPort())
                             for (QuikListener listener : listeners) {
-                                new Thread(() -> {
-                                    listener.received(peer.getConnection(), new QuikBuffer(data));
-                                }).start();
+                                new Thread(() -> listener.received(peer.getConnection(), new QuikBuffer(data))).start();
                             }
                     }
                 } catch (SocketException e) {
@@ -79,6 +77,20 @@ public class QuikServer {
         udpSocket = new DatagramSocket(address);
         tcpThread.start();
         udpThread.start();
+    }
+    
+    public void startKeepAlive(int delay) {
+        keepAliveThread = new Thread(() -> {
+           while(!keepAliveThread.isInterrupted()) {
+               for(QuikPeer peer : peers) {
+                   peer.getConnection().sendTCP(new QuikBuffer().writeBytes((byte) 0));
+               }
+               try {
+                   Thread.sleep(delay);
+               } catch (InterruptedException ignored) {}
+           }
+        });
+        keepAliveThread.start();
     }
     
     public QuikPeer getPeer(int socketId) {
@@ -155,6 +167,8 @@ public class QuikServer {
         }
         tcpThread.interrupt();
         udpThread.interrupt();
+        if(keepAliveThread != null)
+            keepAliveThread.interrupt();
         for(QuikPeer peer : peers) {
             peer.close();
         }

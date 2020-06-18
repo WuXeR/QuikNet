@@ -1,5 +1,8 @@
 package me.imwux.quiknet;
 
+import me.imwux.quiknet.exceptions.EmptyPacketException;
+import me.imwux.quiknet.exceptions.OversizedPacketException;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.DatagramPacket;
@@ -37,24 +40,28 @@ public class QuikConnection {
     
     public void sendTCP(QuikBuffer buffer) {
         byte[] data = createPacket(buffer.toBytes());
+        if(data.length <= 4)
+            throw new EmptyPacketException();
         try {
             OutputStream stream = tcpSocket.getOutputStream();
             stream.write(data);
             stream.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            close();
         }
     }
     
     public void sendUDP(QuikBuffer buffer) {
         byte[] data = createPacket(buffer.toBytes());
+        if(data.length <= 4)
+            throw new EmptyPacketException();
         if(data.length > maxUdpPacketSize)
             throw new OversizedPacketException(maxUdpPacketSize, data.length);
         DatagramPacket packet = new DatagramPacket(data, data.length, udpAddress);
         try {
             udpSocket.send(packet);
         } catch (IOException e) {
-            e.printStackTrace();
+            close();
         }
     }
     

@@ -1,4 +1,4 @@
-package me.imwux.quiknet;
+package me.imwux.quiknet.exceptions;
 
 public class OversizedPacketException extends RuntimeException {
     

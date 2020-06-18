@@ -28,6 +28,8 @@ public static void ExampleClientSetup() throws IOException {
 ```
 
 # **Important**
+NOTE: Sending A Packet With One Byte With The Value 0 Will Not Work Since It Is Reserved As A Ping Packet
+
 QuikNet is still in early development and I haven't properly tested it. It may contain multiple bugs/issues that I'm not aware of.
 If you do find any, please feel free and open up a pull request and I will be more than happy to merge it with the main branch.
 Thanks!
